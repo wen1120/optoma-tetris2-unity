@@ -26,13 +26,17 @@ public class Controller : MonoBehaviour { // TODO: rename
     }
   }
 
-  Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
+  private Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
+  private Color[] colors = { Color.red, Color.green, Color.blue };
+  private int colorIndex = 0;
 
   void FaceEnter(string args) {
     var f = new FaceParams(args);
     GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
     cube.transform.position = new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 0);
     cube.transform.rotation = Quaternion.AngleAxis (-f.r, Vector3.forward);
+    cube.GetComponent<Renderer>().material.color = colors[colorIndex];
+    colorIndex = (colorIndex+1) % colors.Length;
     faces.Add(f.id, cube);
   }
 
