@@ -30,6 +30,17 @@ public class Shape {
     updateModelWith('r');
   }
 
+  public bool canMove(int xDiff, int yDiff) {
+    updateModelWith(' ');
+    this.x += xDiff;
+    this.y += yDiff;
+    bool result = isValid();
+    this.x -= xDiff;
+    this.y -= yDiff;
+    updateModelWith('r');
+    return result;
+  }
+
   public void move(int xDiff, int yDiff) {
     // Debug.Log(string.Format("moving ({0}, {1})", xDiff, yDiff));
     updateModelWith(' ');

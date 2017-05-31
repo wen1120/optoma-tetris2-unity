@@ -13,11 +13,11 @@ public class BlockGameObject : MonoBehaviour {
     Color color;
 
     if(block.state == ' ') {
-      color = Color.gray;
+      color = Color.black;
     } else if(block.state == 'r') {
-      color = Color.black;
+      color = Color.yellow;
     } else if(block.state == 'w') {
-      color = Color.black;
+      color = Color.gray;
     } else {
       color = Color.black;
     }

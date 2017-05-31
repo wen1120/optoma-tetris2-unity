@@ -8,7 +8,9 @@ public class MainController : MonoBehaviour {
 
   private Controller faceController;
   private Block[,] blocks;
-  Shape currentShape;
+  private Shape currentShape;
+  private BlockGameObject[] blockGameObjects;
+
 
   string[] mapDef = {
     "w          w", // spawn
@@ -155,22 +157,55 @@ public class MainController : MonoBehaviour {
     }
   };
 
+  public static string[][][] shapeDefs = {
+    I, L1, L2, Z1, Z2, T, S
+  };
+
 	void Start () {
     faceController = GameObject.Find("Controller")
         .GetComponent<Controller>();
 
     if(DEBUG) {
-      faceController.FaceEnter(new Controller.FaceParams(0, 0, 0, 0).ToString());
+      faceController.FaceEnter(
+          new Controller.FaceParams(0, 0, 0, 0).ToString());
     }
 
     this.blocks = createBlocks(mapDef);
 
     initView(this.blocks, 1.1f);
 
-    currentShape = new Shape(T, 3, 3, this.blocks);
+    var def = shapeDefs[Random.Range(0, shapeDefs.Length)];
+    currentShape = new Shape(def, 6, 2, this.blocks);
 
+    StartCoroutine(step());
 	}
 
+  private IEnumerator step() {
+    while(!isGameOver()) {
+      if(currentShape.canMove(0, 1)) {
+        currentShape.move(0, 1);
+      } else {
+        scan();
+
+        var def = shapeDefs[Random.Range(0, shapeDefs.Length)];
+        currentShape = new Shape(def, 6, 2, this.blocks);
+      }
+
+      currentShape.updateModel();
+      updateBlockObjects();
+
+      yield return new WaitForSeconds(0.2f);
+    }
+    gameOver();
+  }
+
+  private bool isGameOver() {
+    return false; // TODO
+  }
+  
+  private void gameOver() {
+    // TODO
+  }
 
   private Block[,] createBlocks(string[] mapDef) {
     int numRow = mapDef.Length;
@@ -186,7 +221,45 @@ public class MainController : MonoBehaviour {
     return blocks;
   }
 
-  BlockGameObject[] blockGameObjects;
+  private void scan() {
+    int numRow = blocks.GetLength(0);
+    int numCol = blocks.GetLength(1);
+
+    for(int r=numRow-2; r>=0;) {
+
+      int count = 0;
+
+      for(int c=1; c<numCol-1; c++) {
+
+        if(blocks[r, c].state == 'r') {
+          count++;
+        } else if(blocks[r, c].state == ' ') {
+          break;
+        }
+      }
+
+      if(count == (numCol-2)) {
+        eliminate(r);
+      } else {
+        r--;
+      }
+    }
+
+  }
+
+  private void eliminate(int row) {
+    int numCol = blocks.GetLength(1);
+
+    for(int r=row; r>=1; r--) {
+      for(int c=1; c<numCol-1; c++) {
+        blocks[r, c].state = blocks[r-1, c].state;
+      }
+    }
+
+    for(int c=1; c<numCol-1; c++) {
+      blocks[0, c].state = ' ';
+    }
+  }
 
   private void initView(Block[,] blocks, float size) {
     int numRow = blocks.GetLength(0);
@@ -221,28 +294,30 @@ public class MainController : MonoBehaviour {
       float y = (Screen.height - Input.mousePosition.y) / Screen.height;
       // Debug.Log(string.Format("{0}, {1}", x, y));
 
-      faceController.FaceMove(new Controller.FaceParams(0, x, y, 0).ToString());
+      faceController.FaceMove(
+          new Controller.FaceParams(0, x, y, 0).ToString());
     }
+
+    bool hasInput = false;
 
     if (Input.GetKeyDown(KeyCode.UpArrow)) {
       currentShape.rotate();
+      hasInput = true;
     } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
       currentShape.move(0, 1);
+      hasInput = true;
     } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
       currentShape.move(-1, 0);
+      hasInput = true;
     } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
       currentShape.move(1, 0);
+      hasInput = true;
     }
 
-    currentShape.updateModel();
-
-    // for(int i=0; i<blocks.GetLength(0); i++) {
-    //   for(int j=0; j<blocks.GetLength(1); j++) {
-    //     Debug.Log(blocks[i, j].state);
-    //   }
-    // }
-
-    updateBlockObjects();
+    if(hasInput) {
+      currentShape.updateModel();
+      updateBlockObjects();
+    }
 	}
 
   private void updateBlockObjects() {
