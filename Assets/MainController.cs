@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MainController : MonoBehaviour {
 
-  public static bool DEBUG = true;
+  public static bool DEBUG = false;
 
   private Controller faceController;
   private Block[,] blocks;
@@ -365,12 +365,23 @@ public class MainController : MonoBehaviour {
       currentShape.move(1, 0);
     }
 
+    facePositionCache.Add(face);
+    if(facePositionCache.Count > facePositionCacheLimit) {
+      facePositionCache.RemoveAt(0);
+    }
+
+    if(face.y - facePositionCache[0].y > 1) {
+      currentShape.rotate();
+    }
 
     if(hasInput) {
       currentShape.updateModel();
       updateBlockObjects();
     }
 	}
+
+  int facePositionCacheLimit = 5;
+  List<Vector3> facePositionCache = new List<Vector3>();
 
   private void updateBlockObjects() {
     for(int i=0; i<blockGameObjects.Length; i++) {
