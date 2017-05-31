@@ -112,6 +112,16 @@ public class MainController : MonoBehaviour {
       " xo",
       "  o"
     },
+    new string[] {
+      "   ",
+      " xo",
+      "oo "
+    },
+    new string[] {
+      "o  ",
+      "ox ",
+      " o "
+    },
   };
 
   public static string[][] Z2 = {
@@ -124,6 +134,16 @@ public class MainController : MonoBehaviour {
       "  o",
       " xo",
       " o "
+    },
+    new string[] {
+      "   ",
+      "ox ",
+      " oo"
+    },
+    new string[] {
+      " o ",
+      "ox ",
+      "o  "
     },
   };
 
@@ -304,7 +324,9 @@ public class MainController : MonoBehaviour {
       currentShape.rotate();
       hasInput = true;
     } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-      currentShape.move(0, 1);
+      while(currentShape.canMove(0, 1)) {
+        currentShape.move(0, 1);
+      }
       hasInput = true;
     } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
       currentShape.move(-1, 0);
