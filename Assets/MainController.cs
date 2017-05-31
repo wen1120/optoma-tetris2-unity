@@ -10,6 +10,10 @@ public class MainController : MonoBehaviour {
   private Block[,] blocks;
   private Shape currentShape;
   private BlockGameObject[] blockGameObjects;
+  private float size = 1.1f;
+  private float xOffset = -6;
+  private float yOffset = 22;
+
 
 
   string[] mapDef = {
@@ -55,7 +59,7 @@ public class MainController : MonoBehaviour {
     }
   };
 
-  public static string[][] L1 = {
+  public static string[][] L = {
     new string[] {
       " o ",
       " x ",
@@ -78,7 +82,7 @@ public class MainController : MonoBehaviour {
     }
   };
 
-  public static string[][] L2 = {
+  public static string[][] J = {
     new string[] {
       " o ",
       " x ",
@@ -101,7 +105,7 @@ public class MainController : MonoBehaviour {
     }
   };
 
-  public static string[][] Z1 = {
+  public static string[][] S = {
     new string[] {
       " oo",
       "ox ",
@@ -124,7 +128,7 @@ public class MainController : MonoBehaviour {
     },
   };
 
-  public static string[][] Z2 = {
+  public static string[][] Z = {
     new string[] {
       "oo ",
       " xo",
@@ -170,7 +174,7 @@ public class MainController : MonoBehaviour {
     }
   };
 
-  public static string[][] S = {
+  public static string[][] O = {
     new string[] {
       "oo",
       "ox",
@@ -178,7 +182,11 @@ public class MainController : MonoBehaviour {
   };
 
   public static string[][][] shapeDefs = {
-    I, L1, L2, Z1, Z2, T, S
+    I, L, J, S, Z, T, O
+  };
+
+  public static char[] shapeColors = {
+    'r', 'm', 'y', 'c', 'b', 's', 'l'
   };
 
 	void Start () {
@@ -192,10 +200,11 @@ public class MainController : MonoBehaviour {
 
     this.blocks = createBlocks(mapDef);
 
-    initView(this.blocks, 1.1f);
+    initView(this.blocks);
 
-    var def = shapeDefs[Random.Range(0, shapeDefs.Length)];
-    currentShape = new Shape(def, 6, 2, this.blocks);
+    int index = Random.Range(0, shapeDefs.Length);
+    currentShape = new Shape(
+        shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
 
     StartCoroutine(step());
 	}
@@ -207,8 +216,9 @@ public class MainController : MonoBehaviour {
       } else {
         scan();
 
-        var def = shapeDefs[Random.Range(0, shapeDefs.Length)];
-        currentShape = new Shape(def, 6, 2, this.blocks);
+        int index = Random.Range(0, shapeDefs.Length);
+        currentShape = new Shape(
+            shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
       }
 
       currentShape.updateModel();
@@ -251,9 +261,9 @@ public class MainController : MonoBehaviour {
 
       for(int c=1; c<numCol-1; c++) {
 
-        if(blocks[r, c].state == 'r') {
+        if(blocks[r, c].state != ' ') {
           count++;
-        } else if(blocks[r, c].state == ' ') {
+        } else {
           break;
         }
       }
@@ -281,11 +291,9 @@ public class MainController : MonoBehaviour {
     }
   }
 
-  private void initView(Block[,] blocks, float size) {
+  private void initView(Block[,] blocks) {
     int numRow = blocks.GetLength(0);
     int numCol = blocks.GetLength(1);
-    float xOffset = -6;
-    float yOffset = 22;
 
     blockGameObjects = new BlockGameObject[numRow * numCol];
     int index = 0;
@@ -296,6 +304,8 @@ public class MainController : MonoBehaviour {
 
         t.transform.position = new Vector3(
             size * c + xOffset, - size * r + yOffset, 0); // simple imp
+
+        // t.transform.rotation = Quaternion.Euler(0, 0, 10);
 
         BlockGameObject bgo = t.AddComponent<BlockGameObject>();
         bgo.block = this.blocks[r, c];
@@ -335,6 +345,26 @@ public class MainController : MonoBehaviour {
       currentShape.move(1, 0);
       hasInput = true;
     }
+
+
+    // face
+    var face = faceController.getFacePosition(0);
+    int faceX = (int) Mathf.Round((face.x - xOffset) / size);
+    if(faceX < 1) {
+      faceX = 1; 
+    }
+    if (faceX >= blocks.GetLength(1)-1) {
+      faceX = blocks.GetLength(1)-1;
+    }
+    // Debug.Log(faceX);
+
+    while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
+      currentShape.move(-1, 0);
+    }
+    while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
+      currentShape.move(1, 0);
+    }
+
 
     if(hasInput) {
       currentShape.updateModel();

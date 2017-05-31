@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class Controller : MonoBehaviour { // TODO: rename
 
@@ -32,12 +31,12 @@ public class Controller : MonoBehaviour { // TODO: rename
       }
     }
 
-    public string ToString() {
+    public override string ToString() {
       return string.Format("{0};{1};{2};{3}", id, x, y, r);
     }
   }
 
-  private Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
+  public Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
   private Color[] colors = { Color.red, Color.green, Color.blue };
   private int colorIndex = 0;
 
@@ -69,5 +68,12 @@ public class Controller : MonoBehaviour { // TODO: rename
       GameObject.Destroy(cube);
       faces.Remove(f.id);
     }
+  }
+
+  public Vector3 getFacePosition(int index) {
+    foreach(var f in faces) {
+      return faces[f.Key].transform.position;
+    }
+    return Vector3.zero;
   }
 }

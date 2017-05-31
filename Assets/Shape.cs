@@ -4,13 +4,14 @@ using UnityEngine;
 
 public class Shape {
 
-  int x;
-  int y;
+  public int x;
+  public int y;
   Position[][] defs;
   int defIndex = 0;
   Block[,] blocks;
+  char color;
 
-  public Shape(string[][] defs, int x, int y, Block[,] blocks) {
+  public Shape(string[][] defs, int x, int y, Block[,] blocks, char color) {
     this.x = x;
     this.y = y;
     this.defs = new Position[defs.Length][];
@@ -18,6 +19,7 @@ public class Shape {
       this.defs[i] = createDefinition(defs[i]);
     }
     this.blocks = blocks;
+    this.color = color;
   }
 
   public void rotate() {
@@ -27,7 +29,7 @@ public class Shape {
     if(!isValid()) {
       defIndex = oldIndex;
     }
-    updateModelWith('r');
+    updateModelWith(color);
   }
 
   public bool canMove(int xDiff, int yDiff) {
@@ -37,7 +39,7 @@ public class Shape {
     bool result = isValid();
     this.x -= xDiff;
     this.y -= yDiff;
-    updateModelWith('r');
+    updateModelWith(color);
     return result;
   }
 
@@ -52,7 +54,7 @@ public class Shape {
       this.x -= xDiff;
       this.y -= yDiff;
     }
-    updateModelWith('r');
+    updateModelWith(color);
   }
 
   private bool isValid() {
@@ -94,7 +96,7 @@ PIVOT_FOUND:
   }
 
   public void updateModel() {
-    updateModelWith('r');
+    updateModelWith(color);
   }
 
   private void updateModelWith(char state) {
