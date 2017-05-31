@@ -11,6 +11,13 @@ public class Controller : MonoBehaviour { // TODO: rename
     public float y;
     public float r;
 
+    public FaceParams(int id, float x, float y, float r) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.r = r;
+    }
+
     public FaceParams(string args) {
       string[] xy = args.Split (';');
       id = int.Parse (xy [0]);
@@ -24,13 +31,17 @@ public class Controller : MonoBehaviour { // TODO: rename
         r = 0;
       }
     }
+
+    public string ToString() {
+      return string.Format("{0};{1};{2};{3}", id, x, y, r);
+    }
   }
 
   private Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
   private Color[] colors = { Color.red, Color.green, Color.blue };
   private int colorIndex = 0;
 
-  void FaceEnter(string args) {
+  public void FaceEnter(string args) {
     var f = new FaceParams(args);
     GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
     cube.transform.position = new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 0);
@@ -40,7 +51,7 @@ public class Controller : MonoBehaviour { // TODO: rename
     faces.Add(f.id, cube);
   }
 
-  void FaceMove(string args) {
+  public void FaceMove(string args) {
     var f = new FaceParams(args);
 
     if(faces.ContainsKey(f.id)) {
@@ -51,7 +62,7 @@ public class Controller : MonoBehaviour { // TODO: rename
 
   }
 
-  void FaceExit(string args) {
+  public void FaceExit(string args) {
     var f = new FaceParams(args);
     if(faces.ContainsKey(f.id)) {
       GameObject cube = faces[f.id];
