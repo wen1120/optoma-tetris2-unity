@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class MainController : MonoBehaviour {
 
-  public static bool DEBUG = false;
+  public static bool SIM_FACE = false;
 
   private Controller faceController;
   private Block[,] blocks;
   private Shape currentShape;
-  private BlockGameObject[] blockGameObjects;
+  private BlockGameObject[,] blockGameObjects;
   private float size = 1.1f;
   private float xOffset = -6;
   private float yOffset = 22;
@@ -17,30 +17,30 @@ public class MainController : MonoBehaviour {
 
 
   string[] mapDef = {
-    "w          w", // spawn
-    "w          w", // spawn
-    "w          w", // spawn
-    "w          w", // spawn
-    "w          w", // 20
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
+    "w          w", // 0: spawn
+    "w          w", // 1: spawn
+    "w          w", // 2: spawn
+    "w          w", // 3: spawn
     "w          w", 
+    "w          w", // 5
+    "w          w",
+    "w          w",
+    "w          w",
+    "w          w",
     "w          w", // 10
     "w          w",
     "w          w",
+    "w          w", 
+    "w          w", 
+    "w          w", // 15
     "w          w",
     "w          w",
     "w          w",
     "w          w",
+    "w          w", // 20
     "w          w",
     "w          w",
-    "w          w", // 1
+    "w          w", // 23
     "wwwwwwwwwwww",
   };
 
@@ -190,10 +190,13 @@ public class MainController : MonoBehaviour {
   };
 
 	void Start () {
+
+    Screen.sleepTimeout = SleepTimeout.NeverSleep;
+    
     faceController = GameObject.Find("Controller")
         .GetComponent<Controller>();
 
-    if(DEBUG) {
+    if(SIM_FACE) {
       faceController.FaceEnter(
           new Controller.FaceParams(0, 0, 0, 0).ToString());
     }
@@ -202,12 +205,16 @@ public class MainController : MonoBehaviour {
 
     initView(this.blocks);
 
-    int index = Random.Range(0, shapeDefs.Length);
-    currentShape = new Shape(
-        shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
+    createShape();
 
     StartCoroutine(step());
 	}
+
+  private void createShape() {
+    int index = Random.Range(0, shapeDefs.Length);
+    currentShape = new Shape(
+        shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
+  }
 
   private IEnumerator step() {
     while(!isGameOver()) {
@@ -216,15 +223,13 @@ public class MainController : MonoBehaviour {
       } else {
         scan();
 
-        int index = Random.Range(0, shapeDefs.Length);
-        currentShape = new Shape(
-            shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
+        createShape();
       }
 
       currentShape.updateModel();
       updateBlockObjects();
 
-      yield return new WaitForSeconds(0.2f);
+      yield return new WaitForSeconds(0.5f);
     }
     gameOver();
   }
@@ -281,7 +286,7 @@ public class MainController : MonoBehaviour {
     int numCol = blocks.GetLength(1);
 
     for(int r=row; r>=1; r--) {
-      for(int c=1; c<numCol-1; c++) {
+      for(int c=0; c<numCol; c++) {
         blocks[r, c].state = blocks[r-1, c].state;
       }
     }
@@ -295,8 +300,7 @@ public class MainController : MonoBehaviour {
     int numRow = blocks.GetLength(0);
     int numCol = blocks.GetLength(1);
 
-    blockGameObjects = new BlockGameObject[numRow * numCol];
-    int index = 0;
+    blockGameObjects = new BlockGameObject[numRow, numCol];
 
     for(int r=0; r<numRow; r++) {
       for(int c=0; c<numCol; c++) {
@@ -310,16 +314,15 @@ public class MainController : MonoBehaviour {
         BlockGameObject bgo = t.AddComponent<BlockGameObject>();
         bgo.block = this.blocks[r, c];
 
-        blockGameObjects[index++] = bgo;
+        blockGameObjects[r, c] = bgo;
       }
     }
-
   }
 	
 	void Update () {
     // Debug.Log(Input.mousePosition);
 
-    if(DEBUG) {
+    if(SIM_FACE) {
       float x = (Screen.width - Input.mousePosition.x) / Screen.width;
       float y = (Screen.height - Input.mousePosition.y) / Screen.height;
       // Debug.Log(string.Format("{0}, {1}", x, y));
@@ -348,8 +351,9 @@ public class MainController : MonoBehaviour {
 
 
     // face
-    var face = faceController.getFacePosition(0);
-    int faceX = (int) Mathf.Round((face.x - xOffset) / size);
+    var face = faceController.getFace(0);
+    int faceX = 
+        (int) Mathf.Round((face.transform.position.x - xOffset) / size);
     if(faceX < 1) {
       faceX = 1; 
     }
@@ -360,33 +364,67 @@ public class MainController : MonoBehaviour {
 
     while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
       currentShape.move(-1, 0);
+      hasInput = true;
     }
     while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
       currentShape.move(1, 0);
+      hasInput = true;
     }
 
-    facePositionCache.Add(face);
+    facePositionCache.Add(face.transform.position);
     if(facePositionCache.Count > facePositionCacheLimit) {
       facePositionCache.RemoveAt(0);
     }
 
-    if(face.y - facePositionCache[0].y > 1) {
-      currentShape.rotate();
+    // if(face.y - facePositionCache[0].y > 1f) {
+    if(face.transform.rotation.eulerAngles.z > 30) {
+      if(rotateCooldown <= 0) {
+        currentShape.rotate();
+        rotateCooldown = .5f;
+      } 
+      hasInput = true;
     }
+    rotateCooldown -=  Time.deltaTime;
 
     if(hasInput) {
       currentShape.updateModel();
+
       updateBlockObjects();
     }
 	}
 
+  float rotateCooldown = 0;
   int facePositionCacheLimit = 5;
   List<Vector3> facePositionCache = new List<Vector3>();
 
   private void updateBlockObjects() {
-    for(int i=0; i<blockGameObjects.Length; i++) {
-      blockGameObjects[i].updateFromModel();
+    int numRow = blocks.GetLength(0);
+    int numCol = blocks.GetLength(1);
+
+    for(int r=0; r<numRow; r++) {
+      for(int c=0; c<numCol; c++) {
+        blockGameObjects[r, c].updateFromModel();
+      }
     }
+
+    for(int r=0; r<4; r++) {
+      for(int c=0; c<numCol; c++) {
+        blockGameObjects[r, c].gameObject.SetActive(false);
+      }
+    }
+  }
+
+  public void reset() {
+    int numRow = mapDef.Length;
+    int numCol = mapDef[0].Length; // assume # of row > 0
+
+    for(int r=0; r<numRow; r++) {
+      for(int c=0; c<numCol; c++) {
+        blocks[r, c].state = mapDef[r][c];
+      }
+    }
+
+    createShape();
   }
 
 }

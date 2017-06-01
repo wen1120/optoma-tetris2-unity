@@ -36,14 +36,16 @@ public class Controller : MonoBehaviour { // TODO: rename
     }
   }
 
-  public Dictionary<int, GameObject> faces = new Dictionary<int, GameObject>();
+  public Dictionary<int, GameObject> faces = 
+      new Dictionary<int, GameObject>();
   private Color[] colors = { Color.red, Color.green, Color.blue };
   private int colorIndex = 0;
 
   public void FaceEnter(string args) {
     var f = new FaceParams(args);
     GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-    cube.transform.position = new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 0);
+    cube.transform.position = 
+        new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 1);
     cube.transform.rotation = Quaternion.AngleAxis (-f.r, Vector3.forward);
     cube.GetComponent<Renderer>().material.color = colors[colorIndex];
     colorIndex = (colorIndex+1) % colors.Length;
@@ -55,8 +57,15 @@ public class Controller : MonoBehaviour { // TODO: rename
 
     if(faces.ContainsKey(f.id)) {
       GameObject cube = faces[f.id];
-      cube.transform.position = new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 0);
-      cube.transform.rotation = Quaternion.AngleAxis (-f.r, Vector3.forward);
+      cube.transform.position = 
+          new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 1);
+      cube.transform.rotation = 
+          Quaternion.AngleAxis (-f.r, Vector3.forward);
+
+      // camera
+      //Camera.main.transform.position = 
+      //    new Vector3((-f.x - 0.5f) * 2, -(f.y - 0.5f) * 2, -25);
+      //Camera.main.transform.LookAt(new Vector3(0, 5, 0));
     }
 
   }
@@ -70,10 +79,10 @@ public class Controller : MonoBehaviour { // TODO: rename
     }
   }
 
-  public Vector3 getFacePosition(int index) {
+  public GameObject getFace(int index) {
     foreach(var f in faces) {
-      return faces[f.Key].transform.position;
+      return faces[f.Key];
     }
-    return Vector3.zero;
+    return null;
   }
 }

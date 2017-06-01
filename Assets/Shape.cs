@@ -101,11 +101,10 @@ PIVOT_FOUND:
 
   private void updateModelWith(char state) {
     for(int i=0; i<defs[defIndex].Length; i++) {
-      this.blocks[
-        this.y + defs[defIndex][i].y, 
-        this.x + defs[defIndex][i].x
-      ].state = state;
+      int x = this.x + defs[defIndex][i].x;
+      int y = this.y + defs[defIndex][i].y;
+
+      this.blocks[y, x].state = state;
     }
   }
-
 }

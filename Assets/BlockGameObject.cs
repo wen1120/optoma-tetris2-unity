@@ -10,29 +10,42 @@ public class BlockGameObject : MonoBehaviour {
   }
 
   public void updateFromModel() {
-    Color color;
-
-    if(block.state == ' ') {
-      color = Color.black;
-    } else if(block.state == 'r') {
-      color = Color.red;
-    } else if(block.state == 'm') {
-      color = Color.magenta;
-    } else if(block.state == 'y') {
-      color = Color.yellow;
-    } else if(block.state == 'c') {
-      color = Color.cyan;
-    } else if(block.state == 'b') {
-      color = Color.blue;
-    } else if(block.state == 's') {
-      color = Color.gray;
-    } else if(block.state == 'l') {
-      color = Color.green;
-    } else if(block.state == 'w') {
-      color = Color.white;
-    } else {
-      color = Color.black;
+    gameObject.SetActive(true);
+    switch(block.state) {
+      case 'r':
+        setColor(Color.red);
+        break;
+      case 'm':
+        setColor(Color.magenta);
+        break;
+      case 'y':
+        setColor(Color.yellow);
+        break;
+      case 'c':
+        setColor(Color.cyan);
+        break;
+      case 'b':
+        setColor(Color.blue);
+        break;
+      case 's':
+        setColor(Color.gray);
+        break;
+      case 'l':
+        setColor(Color.green);
+        break;
+      case 'w':
+        setColor(Color.white);
+        break;
+      case ' ':
+        gameObject.SetActive(false);
+        break;
+      default:
+        setColor(Color.red);
+        break;
     }
+  }
+
+  private void setColor(Color color) {
     GetComponent<Renderer>().material.color = color;
   }
 }
