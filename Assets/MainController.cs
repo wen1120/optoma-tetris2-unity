@@ -14,8 +14,6 @@ public class MainController : MonoBehaviour {
   private float xOffset = -6;
   private float yOffset = 22;
 
-
-
   string[] mapDef = {
     "w          w", // 0: spawn
     "w          w", // 1: spawn
@@ -301,17 +299,40 @@ public class MainController : MonoBehaviour {
     int numCol = blocks.GetLength(1);
 
     blockGameObjects = new BlockGameObject[numRow, numCol];
+    
+    // var wood = (Texture2D)Resources.Load("light_wood");
 
     for(int r=0; r<numRow; r++) {
       for(int c=0; c<numCol; c++) {
-        GameObject t = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        GameObject p = 
+            new GameObject();
+            // GameObject.CreatePrimitive(PrimitiveType.Cube); 
 
-        t.transform.position = new Vector3(
-            size * c + xOffset, - size * r + yOffset, 0); // simple imp
+        p.transform.position = new Vector3(
+            size * c + xOffset + Random.Range(-0.05f, 0.05f), 
+            - size * r + yOffset + Random.Range(-0.05f, 0.05f) + 0.5f, 
+            0);
+
+        GameObject t = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        t.transform.parent = p.transform;
+        t.transform.localPosition = new Vector3(0, -0.5f, 0);
+        t.transform.localScale = new Vector3(1, 1, 0.1f);
+
+        p.transform.rotation = Quaternion.Euler(
+            Random.Range(0f, 10f), 
+            0, 
+            Random.Range(-2f, 2f));
+
+        // t.GetComponent<Renderer>().material.mainTexture = wood;
+
+        // GameObject b = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        // b.transform.position = new Vector3(
+        //     size * c + xOffset, - size * r + yOffset, 1);
+        // b.GetComponent<Renderer>().material.mainTexture = wood;
 
         // t.transform.rotation = Quaternion.Euler(0, 0, 10);
 
-        BlockGameObject bgo = t.AddComponent<BlockGameObject>();
+        BlockGameObject bgo = p.AddComponent<BlockGameObject>();
         bgo.block = this.blocks[r, c];
 
         blockGameObjects[r, c] = bgo;
@@ -333,58 +354,59 @@ public class MainController : MonoBehaviour {
 
     bool hasInput = false;
 
-    if (Input.GetKeyDown(KeyCode.UpArrow)) {
-      currentShape.rotate();
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-      while(currentShape.canMove(0, 1)) {
-        currentShape.move(0, 1);
-      }
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-      currentShape.move(-1, 0);
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-      currentShape.move(1, 0);
-      hasInput = true;
-    }
+    //keyboard
+    // if (Input.GetKeyDown(KeyCode.UpArrow)) {
+    //   currentShape.rotate();
+    //   hasInput = true;
+    // } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+    //   while(currentShape.canMove(0, 1)) {
+    //     currentShape.move(0, 1);
+    //   }
+    //   hasInput = true;
+    // } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+    //   currentShape.move(-1, 0);
+    //   hasInput = true;
+    // } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+    //   currentShape.move(1, 0);
+    //   hasInput = true;
+    // }
 
 
     // face
-    var face = faceController.getFace(0);
-    int faceX = 
-        (int) Mathf.Round((face.transform.position.x - xOffset) / size);
-    if(faceX < 1) {
-      faceX = 1; 
-    }
-    if (faceX >= blocks.GetLength(1)-1) {
-      faceX = blocks.GetLength(1)-1;
-    }
-    // Debug.Log(faceX);
+    // var face = faceController.getFace(0);
+    // int faceX = 
+    //     (int) Mathf.Round((face.transform.position.x - xOffset) / size);
+    // if(faceX < 1) {
+    //   faceX = 1; 
+    // }
+    // if (faceX >= blocks.GetLength(1)-1) {
+    //   faceX = blocks.GetLength(1)-1;
+    // }
+    // // Debug.Log(faceX);
+    //
+    // while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
+    //   currentShape.move(-1, 0);
+    //   hasInput = true;
+    // }
+    // while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
+    //   currentShape.move(1, 0);
+    //   hasInput = true;
+    // }
+    //
+    // facePositionCache.Add(face.transform.position);
+    // if(facePositionCache.Count > facePositionCacheLimit) {
+    //   facePositionCache.RemoveAt(0);
+    // }
 
-    while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
-      currentShape.move(-1, 0);
-      hasInput = true;
-    }
-    while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
-      currentShape.move(1, 0);
-      hasInput = true;
-    }
-
-    facePositionCache.Add(face.transform.position);
-    if(facePositionCache.Count > facePositionCacheLimit) {
-      facePositionCache.RemoveAt(0);
-    }
-
-    // if(face.y - facePositionCache[0].y > 1f) {
-    if(face.transform.rotation.eulerAngles.z > 30) {
-      if(rotateCooldown <= 0) {
-        currentShape.rotate();
-        rotateCooldown = .5f;
-      } 
-      hasInput = true;
-    }
-    rotateCooldown -=  Time.deltaTime;
+    // // if(face.y - facePositionCache[0].y > 1f) {
+    // if(face.transform.rotation.eulerAngles.z > 30) {
+    //   if(rotateCooldown <= 0) {
+    //     currentShape.rotate();
+    //     rotateCooldown = .5f;
+    //   } 
+    //   hasInput = true;
+    // }
+    // rotateCooldown -=  Time.deltaTime;
 
     if(hasInput) {
       currentShape.updateModel();
