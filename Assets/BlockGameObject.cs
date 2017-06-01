@@ -62,7 +62,9 @@ public class BlockGameObject : MonoBehaviour {
 
   public void Update() {
     transform.eulerAngles = new Vector3(
-      10f + (Mathf.PerlinNoise(Time.time + seed, 0f)-0.5f) * 20,
+      10f + (Mathf.PerlinNoise(Time.time + seed, 0f)-0.5f) * 
+          10,
+          //(Mathf.PerlinNoise(Time.time, 1f) * 10),
       transform.eulerAngles.y,
       transform.eulerAngles.z
     );

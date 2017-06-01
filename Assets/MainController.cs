@@ -187,7 +187,12 @@ public class MainController : MonoBehaviour {
     'r', 'm', 'y', 'c', 'b', 's', 'l'
   };
 
+  private Texture2D paper1;
+  private Texture2D paper2;
+
 	void Start () {
+    paper1 = (Texture2D) Resources.Load("paper3");
+    paper2 = (Texture2D) Resources.Load("paper4");
 
     Screen.sleepTimeout = SleepTimeout.NeverSleep;
     
@@ -313,13 +318,15 @@ public class MainController : MonoBehaviour {
             - size * r + yOffset + Random.Range(-0.05f, 0.05f) + 0.5f, 
             0);
 
-        GameObject t = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        GameObject t = GameObject.CreatePrimitive(PrimitiveType.Quad);
         t.transform.parent = p.transform;
         t.transform.localPosition = new Vector3(0, -0.5f, 0);
-        t.transform.localScale = new Vector3(1, 1, 0.1f);
+        t.transform.localScale = new Vector3(1, 1, 1);
+        t.GetComponent<Renderer>().material.mainTexture = 
+            (Random.Range(0, 2) == 0) ? paper1: paper2;
 
         p.transform.rotation = Quaternion.Euler(
-            Random.Range(0f, 10f), 
+            -90+Random.Range(0f, 10f), 
             0, 
             Random.Range(-2f, 2f));
 
@@ -355,21 +362,21 @@ public class MainController : MonoBehaviour {
     bool hasInput = false;
 
     //keyboard
-    // if (Input.GetKeyDown(KeyCode.UpArrow)) {
-    //   currentShape.rotate();
-    //   hasInput = true;
-    // } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-    //   while(currentShape.canMove(0, 1)) {
-    //     currentShape.move(0, 1);
-    //   }
-    //   hasInput = true;
-    // } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-    //   currentShape.move(-1, 0);
-    //   hasInput = true;
-    // } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-    //   currentShape.move(1, 0);
-    //   hasInput = true;
-    // }
+    if (Input.GetKeyDown(KeyCode.UpArrow)) {
+      currentShape.rotate();
+      hasInput = true;
+    } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+      while(currentShape.canMove(0, 1)) {
+        currentShape.move(0, 1);
+      }
+      hasInput = true;
+    } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+      currentShape.move(-1, 0);
+      hasInput = true;
+    } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+      currentShape.move(1, 0);
+      hasInput = true;
+    }
 
 
     // face
