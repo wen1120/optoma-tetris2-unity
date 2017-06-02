@@ -13,6 +13,7 @@ public class BlockGameObject : MonoBehaviour {
   public static Color lime = new Color32(153, 255, 51, 255);
   public static Color cyan = new Color32(102, 255, 204, 255);
   public static Color brown = new Color32(255, 153, 0, 255);
+  public static Color black = new Color32(33, 33, 33, 255);
 
   private float seed;
 
@@ -43,11 +44,14 @@ public class BlockGameObject : MonoBehaviour {
       case 'w':
         setColor(brown);
         break;
+      case 'd':
+        setColor(black);
+        break;
       case ' ':
         gameObject.SetActive(false);
         break;
       default:
-        setColor(Color.red);
+        gameObject.SetActive(false);
         break;
     }
   }
@@ -61,13 +65,13 @@ public class BlockGameObject : MonoBehaviour {
   }
 
   public void Update() {
-    transform.eulerAngles = new Vector3(
-      10f + (Mathf.PerlinNoise(Time.time + seed, 0f)-0.5f) * 
-          10,
-          //(Mathf.PerlinNoise(Time.time, 1f) * 10),
-      transform.eulerAngles.y,
-      transform.eulerAngles.z
-    );
-    
+    // transform.eulerAngles = new Vector3(
+    //   10f + (Mathf.PerlinNoise(Time.time + seed, 0f)-0.5f) * 
+    //       10,
+    //       //(Mathf.PerlinNoise(Time.time, 1f) * 10),
+    //   transform.eulerAngles.y,
+    //   transform.eulerAngles.z
+    // );
+
   }
 }

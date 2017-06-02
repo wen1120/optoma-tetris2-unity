@@ -11,35 +11,39 @@ public class MainController : MonoBehaviour {
   private Shape currentShape;
   private BlockGameObject[,] blockGameObjects;
   private float size = 1.1f;
-  private float xOffset = -6;
+  private float xOffset = -22;
   private float yOffset = 22;
+  public bool hasPower = true;
+  private int initX = 20;
+  private int initY = 3;
+  private Position upperLeft, lowerRight;
 
   string[] mapDef = {
-    "w          w", // 0: spawn
-    "w          w", // 1: spawn
-    "w          w", // 2: spawn
-    "w          w", // 3: spawn
-    "w          w", 
-    "w          w", // 5
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w", // 10
-    "w          w",
-    "w          w",
-    "w          w", 
-    "w          w", 
-    "w          w", // 15
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w",
-    "w          w", // 20
-    "w          w",
-    "w          w",
-    "w          w", // 23
-    "wwwwwwwwwwww",
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________", //_spawn
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "__ddd_ddd_ddd_w          w_ddd_d_d__d___", 
+    "__d_d_d_d__d__w          w_d_d_ddd_d_d__", 
+    "__d_d_ddd__d__w          w_d_d_d_d_ddd__",
+    "__ddd_d____d__w          w_ddd_d_d_d_d__",
+    "______________w          w______________",
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________",
+    "______________w          w______________",
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________",
+    "______________w          w______________",
+    "______________w          w______________",
+    "______________w          w______________", 
+    "______________w          w______________", 
+    "______________w          w______________",
+    "______________wwwwwwwwwwww______________"
   };
 
   public static string[][] I = {
@@ -206,17 +210,19 @@ public class MainController : MonoBehaviour {
 
     this.blocks = createBlocks(mapDef);
 
-    initView(this.blocks);
+    initBlocks(this.blocks);
 
     createShape();
 
-    StartCoroutine(step());
+    if(hasPower) {
+      StartCoroutine(step());
+    }
 	}
 
   private void createShape() {
     int index = Random.Range(0, shapeDefs.Length);
     currentShape = new Shape(
-        shapeDefs[index], 6, 2, this.blocks, shapeColors[index]);
+        shapeDefs[index], initX, initY, this.blocks, shapeColors[index]);
   }
 
   private IEnumerator step() {
@@ -256,50 +262,65 @@ public class MainController : MonoBehaviour {
       }
     }
 
+    for(int r=0; r<numRow; r++) {
+      for(int c=0; c<numCol; c++) {
+        if(mapDef[r][c] == ' ') {
+          upperLeft = new Position(c, r);
+          goto L1;
+        }
+      }
+    }
+L1:
+    for(int r=numRow-1; r>=0; r--) {
+      for(int c=numCol-1; c>=0; c--) {
+        if(mapDef[r][c] == ' ') {
+          lowerRight = new Position(c, r);
+          goto L2;
+        }
+      }
+    }
+L2:
+    Debug.Log("upper left: "+upperLeft);
+    Debug.Log("lower right: "+lowerRight);
     return blocks;
   }
 
   private void scan() {
-    int numRow = blocks.GetLength(0);
-    int numCol = blocks.GetLength(1);
-
-    for(int r=numRow-2; r>=0;) {
+    for(int r=lowerRight.y; r>=upperLeft.y;) {
 
       int count = 0;
 
-      for(int c=1; c<numCol-1; c++) {
-
-        if(blocks[r, c].state != ' ') {
-          count++;
-        } else {
-          break;
-        }
+      for(int c=upperLeft.x; c<=lowerRight.x; c++) {
+        if(blocks[r, c].state == ' ') {
+          r--;
+          goto L1;
+        } 
       }
 
-      if(count == (numCol-2)) {
-        eliminate(r);
-      } else {
-        r--;
-      }
+      eliminate(r);
+
+L1:   ;
+
     }
 
   }
 
   private void eliminate(int row) {
-    int numCol = blocks.GetLength(1);
+    Debug.Log("eliminate: "+row);
 
-    for(int r=row; r>=1; r--) {
-      for(int c=0; c<numCol; c++) {
+    for(int r=row; r>upperLeft.y; r--) {
+      for(int c=upperLeft.x; c<=lowerRight.x; c++) {
         blocks[r, c].state = blocks[r-1, c].state;
       }
     }
 
-    for(int c=1; c<numCol-1; c++) {
-      blocks[0, c].state = ' ';
+    // the first row
+    for(int c=upperLeft.x; c<=lowerRight.x; c++) {
+      blocks[upperLeft.y, c].state = ' ';
     }
   }
 
-  private void initView(Block[,] blocks) {
+  private void initBlocks(Block[,] blocks) {
     int numRow = blocks.GetLength(0);
     int numCol = blocks.GetLength(1);
 
@@ -318,6 +339,9 @@ public class MainController : MonoBehaviour {
             - size * r + yOffset + Random.Range(-0.05f, 0.05f) + 0.5f, 
             0);
 
+        // Rigidbody rb = p.AddComponent<Rigidbody>();
+        // rb.AddForce(new Vector3(1, 0, 0));
+
         GameObject t = GameObject.CreatePrimitive(PrimitiveType.Quad);
         t.transform.parent = p.transform;
         t.transform.localPosition = new Vector3(0, -0.5f, 0);
@@ -326,7 +350,7 @@ public class MainController : MonoBehaviour {
             (Random.Range(0, 2) == 0) ? paper1: paper2;
 
         p.transform.rotation = Quaternion.Euler(
-            -90+Random.Range(0f, 10f), 
+            Random.Range(0f, 10f), 
             0, 
             Random.Range(-2f, 2f));
 
@@ -470,6 +494,9 @@ public struct Position {
   public Position(Position that) {
     this.x = that.x;
     this.y = that.y;
+  }
+  public override string ToString() {
+    return string.Format("({0}, {1})", this.x, this.y);
   }
 }
 
