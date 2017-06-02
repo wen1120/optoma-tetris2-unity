@@ -408,11 +408,11 @@ L1:   ;
 
     // O(# of faces)
     foreach(var p in faceController.getFaces()) {
-      if(p.Value.x <= 0.5f) { // left
+      if(p.Value.x <= 0.45f) { // left
         if(p.Value.w > leftFace.w) {
           leftFace = p.Value;
         }
-      } else { // right
+      } else if(p.Value.x >= 0.55f) { // right
         if(p.Value.w > rightFace.w) {
           rightFace = p.Value;
         }
