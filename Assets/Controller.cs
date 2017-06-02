@@ -4,85 +4,86 @@ using UnityEngine;
 
 public class Controller : MonoBehaviour { // TODO: rename
 
-  public struct FaceParams {
-    public int id;
+  public struct Face {
+    public static readonly Face DUMMY = new Face(-1, 0, 0, 0, 0);
+    public readonly int id;
     public float x;
     public float y;
     public float r;
+    public float w;
 
-    public FaceParams(int id, float x, float y, float r) {
+    public Face(int id, float x, float y, float r, float w) {
       this.id = id;
       this.x = x;
       this.y = y;
       this.r = r;
+      this.w = w;
     }
 
-    public FaceParams(string args) {
-      string[] xy = args.Split (';');
-      id = int.Parse (xy [0]);
-      if (xy.Length == 4) {
-        x = float.Parse (xy [1]);
-        y = float.Parse (xy [2]);
-        r = float.Parse (xy [3]);
+    public Face(string args) {
+      string[] vals = args.Split (';');
+      this.id = int.Parse (vals[0]);
+      if(vals.Length > 1) {
+        this.x = float.Parse (vals[1]);
+        this.y = float.Parse (vals[2]);
+        this.r = float.Parse (vals[3]);
+        this.w = float.Parse (vals[4]);
       } else {
-        x = 0;
-        y = 0;
-        r = 0;
+        this.x = 0;
+        this.y = 0;
+        this.r = 0;
+        this.w = 0;
       }
     }
 
+    public void copy(Face that) {
+      this.x = that.x;
+      this.y = that.y;
+      this.r = that.r;
+      this.w = that.w;
+    }
+    public static bool operator ==(Face x, Face y) {
+      return x.id == y.id && x.x == y.x && x.y == y.y && 
+          x.r == y.r && x.w == y.w;
+    }
+
+    public static bool operator !=(Face x, Face y) {
+      return !(x == y);
+    }
+
     public override string ToString() {
-      return string.Format("{0};{1};{2};{3}", id, x, y, r);
+      return string.Format("{0};{1};{2};{3};{4}", id, x, y, r, w);
     }
   }
 
-  public Dictionary<int, GameObject> faces = 
-      new Dictionary<int, GameObject>();
-  private Color[] colors = { Color.red, Color.green, Color.blue };
-  private int colorIndex = 0;
+  public Dictionary<int, Face> faces = 
+      new Dictionary<int, Face>();
 
   public void FaceEnter(string args) {
-    var f = new FaceParams(args);
-    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-    cube.transform.position = 
-        new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 1);
-    cube.transform.rotation = Quaternion.AngleAxis (-f.r, Vector3.forward);
-    cube.GetComponent<Renderer>().material.color = colors[colorIndex];
-    colorIndex = (colorIndex+1) % colors.Length;
-    faces.Add(f.id, cube);
+    var f = new Face(args);
+    faces.Add(f.id, f);
   }
 
   public void FaceMove(string args) {
-    var f = new FaceParams(args);
+    var f = new Face(args);
 
     if(faces.ContainsKey(f.id)) {
-      GameObject cube = faces[f.id];
-      cube.transform.position = 
-          new Vector3 (-(f.x - 0.5f) * 20, -(f.y - 0.5f) * 20, 1);
-      cube.transform.rotation = 
-          Quaternion.AngleAxis (-f.r, Vector3.forward);
-
-      // camera
-      //Camera.main.transform.position = 
-      //    new Vector3((-f.x - 0.5f) * 2, -(f.y - 0.5f) * 2, -25);
-      //Camera.main.transform.LookAt(new Vector3(0, 5, 0));
+      faces[f.id] = f;
+    } else {
+      // what?
     }
 
   }
 
   public void FaceExit(string args) {
-    var f = new FaceParams(args);
+    var f = new Face(args);
     if(faces.ContainsKey(f.id)) {
-      GameObject cube = faces[f.id];
-      GameObject.Destroy(cube);
       faces.Remove(f.id);
     }
   }
 
-  public GameObject getFace(int index) {
-    foreach(var f in faces) {
-      return faces[f.Key];
-    }
-    return null;
+  public Dictionary<int, Face> getFaces() {
+    return faces;
   }
+
 }

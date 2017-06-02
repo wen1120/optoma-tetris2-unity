@@ -15,7 +15,7 @@ public class BlockGameObject : MonoBehaviour {
   public static Color brown = new Color32(255, 153, 0, 255);
   public static Color black = new Color32(33, 33, 33, 255);
 
-  private float seed;
+  // private float seed;
 
   public void updateFromModel() {
     gameObject.SetActive(true);
@@ -61,7 +61,7 @@ public class BlockGameObject : MonoBehaviour {
   }
 
   public void Start() {
-    seed = Random.Range(0, 100f);
+    // seed = Random.Range(0, 100f);
   }
 
   public void Update() {

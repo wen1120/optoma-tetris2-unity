@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MainController : MonoBehaviour {
 
-  public static bool SIM_FACE = false;
+  public static bool SIM_FACE_WITH_MOUSE = false;
 
   private Controller faceController;
   private Block[,] blocks;
@@ -18,11 +18,11 @@ public class MainController : MonoBehaviour {
   private int initY = 3;
   private Position upperLeft, lowerRight;
 
-  string[] mapDef = {
-    "______________w          w______________", 
-    "______________w          w______________", 
-    "______________w          w______________", 
-    "______________w          w______________", //_spawn
+  string[] map = {
+    "______________w          w______________", // spawn
+    "______________w          w______________", // spawn
+    "______________w          w______________", // spawn
+    "______________w          w______________", // spawn
     "______________w          w______________", 
     "______________w          w______________", 
     "__ddd_ddd_ddd_w          w_ddd_d_d__d___", 
@@ -183,7 +183,7 @@ public class MainController : MonoBehaviour {
     }
   };
 
-  public static string[][][] shapeDefs = {
+  public static string[][][] shapes = {
     I, L, J, S, Z, T, O
   };
 
@@ -203,14 +203,14 @@ public class MainController : MonoBehaviour {
     faceController = GameObject.Find("Controller")
         .GetComponent<Controller>();
 
-    if(SIM_FACE) {
+    if(SIM_FACE_WITH_MOUSE) {
       faceController.FaceEnter(
-          new Controller.FaceParams(0, 0, 0, 0).ToString());
+          new Controller.Face(0, 0, 0, 0, 0).ToString());
     }
 
-    this.blocks = createBlocks(mapDef);
+    this.blocks = createBlocks(map);
 
-    initBlocks(this.blocks);
+    createBlockGameObjects(this.blocks);
 
     createShape();
 
@@ -220,9 +220,9 @@ public class MainController : MonoBehaviour {
 	}
 
   private void createShape() {
-    int index = Random.Range(0, shapeDefs.Length);
+    int index = Random.Range(0, shapes.Length);
     currentShape = new Shape(
-        shapeDefs[index], initX, initY, this.blocks, shapeColors[index]);
+        shapes[index], initX, initY, this.blocks, shapeColors[index]);
   }
 
   private IEnumerator step() {
@@ -251,20 +251,20 @@ public class MainController : MonoBehaviour {
     // TODO
   }
 
-  private Block[,] createBlocks(string[] mapDef) {
-    int numRow = mapDef.Length;
-    int numCol = mapDef[0].Length; // assume # of row > 0
+  private Block[,] createBlocks(string[] map) {
+    int numRow = map.Length;
+    int numCol = map[0].Length; // assume # of row > 0
     var blocks = new Block[numRow, numCol];
 
     for(int r=0; r<numRow; r++) {
       for(int c=0; c<numCol; c++) {
-        blocks[r, c] = new Block(c, r, mapDef[r][c]);
+        blocks[r, c] = new Block(c, r, map[r][c]);
       }
     }
 
     for(int r=0; r<numRow; r++) {
       for(int c=0; c<numCol; c++) {
-        if(mapDef[r][c] == ' ') {
+        if(map[r][c] == ' ') {
           upperLeft = new Position(c, r);
           goto L1;
         }
@@ -273,22 +273,20 @@ public class MainController : MonoBehaviour {
 L1:
     for(int r=numRow-1; r>=0; r--) {
       for(int c=numCol-1; c>=0; c--) {
-        if(mapDef[r][c] == ' ') {
+        if(map[r][c] == ' ') {
           lowerRight = new Position(c, r);
           goto L2;
         }
       }
     }
 L2:
-    Debug.Log("upper left: "+upperLeft);
-    Debug.Log("lower right: "+lowerRight);
+    // Debug.Log("upper left: "+upperLeft);
+    // Debug.Log("lower right: "+lowerRight);
     return blocks;
   }
 
   private void scan() {
     for(int r=lowerRight.y; r>=upperLeft.y;) {
-
-      int count = 0;
 
       for(int c=upperLeft.x; c<=lowerRight.x; c++) {
         if(blocks[r, c].state == ' ') {
@@ -306,7 +304,7 @@ L1:   ;
   }
 
   private void eliminate(int row) {
-    Debug.Log("eliminate: "+row);
+    // Debug.Log("eliminate: "+row);
 
     for(int r=row; r>upperLeft.y; r--) {
       for(int c=upperLeft.x; c<=lowerRight.x; c++) {
@@ -320,7 +318,7 @@ L1:   ;
     }
   }
 
-  private void initBlocks(Block[,] blocks) {
+  private void createBlockGameObjects(Block[,] blocks) {
     int numRow = blocks.GetLength(0);
     int numCol = blocks.GetLength(1);
 
@@ -374,81 +372,88 @@ L1:   ;
 	void Update () {
     // Debug.Log(Input.mousePosition);
 
-    if(SIM_FACE) {
-      float x = (Screen.width - Input.mousePosition.x) / Screen.width;
+    if(SIM_FACE_WITH_MOUSE) {
+      float x = Input.mousePosition.x / Screen.width;
       float y = (Screen.height - Input.mousePosition.y) / Screen.height;
       // Debug.Log(string.Format("{0}, {1}", x, y));
 
       faceController.FaceMove(
-          new Controller.FaceParams(0, x, y, 0).ToString());
+          new Controller.Face(0, x, y, 0, 1).ToString());
     }
 
     bool hasInput = false;
 
-    //keyboard
-    if (Input.GetKeyDown(KeyCode.UpArrow)) {
-      currentShape.rotate();
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-      while(currentShape.canMove(0, 1)) {
-        currentShape.move(0, 1);
-      }
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-      currentShape.move(-1, 0);
-      hasInput = true;
-    } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-      currentShape.move(1, 0);
-      hasInput = true;
-    }
+    // keyboard
+    //if (Input.GetKeyDown(KeyCode.UpArrow)) {
+    //  currentShape.rotate();
+    //  hasInput = true;
+    //} else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+    //  while(currentShape.canMove(0, 1)) {
+    //    currentShape.move(0, 1);
+    //  }
+    //  hasInput = true;
+    //} else if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+    //  currentShape.move(-1, 0);
+    //  hasInput = true;
+    //} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+    //  currentShape.move(1, 0);
+    //  hasInput = true;
+    //}
 
 
     // face
-    // var face = faceController.getFace(0);
-    // int faceX = 
-    //     (int) Mathf.Round((face.transform.position.x - xOffset) / size);
-    // if(faceX < 1) {
-    //   faceX = 1; 
-    // }
-    // if (faceX >= blocks.GetLength(1)-1) {
-    //   faceX = blocks.GetLength(1)-1;
-    // }
-    // // Debug.Log(faceX);
-    //
-    // while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
-    //   currentShape.move(-1, 0);
-    //   hasInput = true;
-    // }
-    // while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
-    //   currentShape.move(1, 0);
-    //   hasInput = true;
-    // }
-    //
-    // facePositionCache.Add(face.transform.position);
-    // if(facePositionCache.Count > facePositionCacheLimit) {
-    //   facePositionCache.RemoveAt(0);
-    // }
+    
+    Controller.Face leftFace = Controller.Face.DUMMY;
+    Controller.Face rightFace = Controller.Face.DUMMY;
 
-    // // if(face.y - facePositionCache[0].y > 1f) {
-    // if(face.transform.rotation.eulerAngles.z > 30) {
-    //   if(rotateCooldown <= 0) {
-    //     currentShape.rotate();
-    //     rotateCooldown = .5f;
-    //   } 
-    //   hasInput = true;
-    // }
-    // rotateCooldown -=  Time.deltaTime;
+    // O(# of faces)
+    foreach(var p in faceController.getFaces()) {
+      if(p.Value.x <= 0.5f) { // left
+        if(p.Value.w > leftFace.w) {
+          leftFace = p.Value;
+        }
+      } else { // right
+        if(p.Value.w > rightFace.w) {
+          rightFace = p.Value;
+        }
+      }
+    }
+
+    // Debug.Log("#: "+faceController.getFaces().Count+", left: "+leftFace + ", right: "+rightFace);
+
+    if(leftFace != Controller.Face.DUMMY) {
+      float leftX = leftFace.x * 2;
+      // Debug.Log("left: "+leftX);
+
+      int numZones = currentShape.defs.Length;
+      float zoneWidth = 1.0f / numZones;
+
+      currentShape.setVariation((int) (leftX / zoneWidth));
+    }
+
+    if(rightFace != Controller.Face.DUMMY) {
+      float rightX = (rightFace.x - 0.5f) * 2;
+      // Debug.Log("right: "+rightX);
+
+      // nice!
+      int faceX = upperLeft.x + 
+          (int) Mathf.Round(rightX * (lowerRight.x - upperLeft.x));
+
+      while(currentShape.x > faceX && currentShape.canMove(-1, 0)) {
+        currentShape.move(-1, 0);
+        hasInput = true;
+      }
+      while(currentShape.x < faceX && currentShape.canMove(1, 0)) {
+        currentShape.move(1, 0);
+        hasInput = true;
+      }
+    }
 
     if(hasInput) {
       currentShape.updateModel();
-
       updateBlockObjects();
     }
 	}
-
-  float rotateCooldown = 0;
-  int facePositionCacheLimit = 5;
-  List<Vector3> facePositionCache = new List<Vector3>();
 
   private void updateBlockObjects() {
     int numRow = blocks.GetLength(0);
@@ -468,12 +473,12 @@ L1:   ;
   }
 
   public void reset() {
-    int numRow = mapDef.Length;
-    int numCol = mapDef[0].Length; // assume # of row > 0
+    int numRow = map.Length;
+    int numCol = map[0].Length; // assume # of row > 0
 
     for(int r=0; r<numRow; r++) {
       for(int c=0; c<numCol; c++) {
-        blocks[r, c].state = mapDef[r][c];
+        blocks[r, c].state = map[r][c];
       }
     }
 

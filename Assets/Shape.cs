@@ -6,8 +6,8 @@ public class Shape {
 
   public int x;
   public int y;
-  Position[][] defs;
-  int defIndex = 0;
+  public Position[][] defs;
+  public int defIndex = 0;
   Block[,] blocks;
   char color;
 
@@ -106,5 +106,18 @@ PIVOT_FOUND:
 
       this.blocks[y, x].state = state;
     }
+  }
+
+  public void setVariation(int v) {
+    if(v < 0 || v > defs.Length) return;
+
+    updateModelWith(' ');
+    int oldIndex = defIndex;
+    defIndex = v;
+    if(!isValid()) {
+      defIndex = oldIndex;
+    }
+    updateModelWith(color);
+
   }
 }
